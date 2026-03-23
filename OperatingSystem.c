@@ -162,6 +162,9 @@ void OperatingSystem_Initialize(int programsFromFileIndex) {
 	OperatingSystem_Dispatch(selectedProcess);
 	// Initial operation for Operating System
 	Processor_SetPC(OS_address_base);
+
+	// Ex 3: modification
+	OperatingSystem_PrintStatus();
 }
 
 // The LTS is responsible of the admission of new processes in the system.
@@ -197,6 +200,10 @@ int OperatingSystem_LongTermScheduler() {
 					numberOfNotTerminatedUserProcesses++;
 				// Move process to the ready state
 				OperatingSystem_MoveToTheREADYState(createdProcessPID);
+				
+				// Ex 3: modification
+				OperatingSystem_PrintStatus();
+				break;
 		}
 	}
 	// Return the number of succesfully created 
@@ -409,6 +416,9 @@ void OperatingSystem_HandleException() {
 	ComputerSystem_DebugMessage(TIMED_MESSAGE,71,INTERRUPT,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
 	
 	OperatingSystem_TerminateExecutingProcess();
+
+	// Ex 3: modification
+	OperatingSystem_PrintStatus();
 }
 
 // All tasks regarding the removal of the executing process
@@ -462,6 +472,9 @@ void OperatingSystem_HandleSystemCall() {
 			// Show message: "Process [executingProcessID] has requested to terminate\n"
 			ComputerSystem_DebugMessage(TIMED_MESSAGE,73,SYSPROC,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
 			OperatingSystem_TerminateExecutingProcess();
+
+			// Ex 3: modification
+			OperatingSystem_PrintStatus();
 			break;
 			
 		case SYSCALL_YIELD:
@@ -505,6 +518,10 @@ void OperatingSystem_HandleYield() {
 		OperatingSystem_ExtractFromReadyToRunQueue(currentQueue);
 		OperatingSystem_PreemptRunningProcess();
 		OperatingSystem_Dispatch(otherProcessID);
+
+		// Ex 3: modification
+		OperatingSystem_PrintStatus();
+
 	} else {
 		// yielding is not possible
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 56, SHORTTERMSCHEDULE, executingProcessID,
