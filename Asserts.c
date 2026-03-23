@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -24,7 +24,9 @@ extern int registerA_CPU; // Register A
 extern int registerB_CPU; // Register B
 extern int registerSP_CPU; // Stack pointer register
 extern int registerC_CPU; // Register C
+#ifdef SLEEPINGQUEUE
 extern int registerD_CPU; // Register D
+#endif
 
 char *elements[2][38]={{
 	"RMEM_OP",	// Relative MEMory OPeration code
@@ -63,7 +65,9 @@ char *elements[2][38]={{
 	"RA",		// Register A
 	"RB",		// Register B
 	"RC",		// Register C
+#ifdef SLEEPINGQUEUE
 	"RD",		// Register D
+#endif
 	NULL},{
 	"Relative MEMory OPeration code",
 	"Relative MEMory Operand 1",
@@ -104,7 +108,6 @@ char *elements[2][38]={{
 	"Register D",
 	NULL		
 	}};
-
 ASSERT_DATA * asserts;
 int MAX_ASSERTS=500; // Default number of asserts
 
@@ -149,36 +152,36 @@ void strcpySpaces(char *target, char *src, int nChars) {
 
 int Asserts_LoadAsserts() {
 	// load asserts file into asserts array;
-	ASSERT_DATA a;
+ ASSERT_DATA a;
 
-	char lineRead[MAXLINELENGTH];
-	FILE *mf;
-	char *time, *element, *value, *address;
-	char svalue[E_SIZE];
-	
-
-	int lineNumber=0;;
-	int numberAsserts=0;
-	int rc=0;
-	int en;
-	
-	// All time asserts list is at the end of assersQueue in reverse order
-	beginOfAllTimeAsserts=MAX_ASSERTS;
-
-	mf=fopen(ASSERTS_FILE, "r");
-	if (mf==NULL) {
-		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,82,POWERON,0);
-		return -1;
-}
+ char lineRead[MAXLINELENGTH];
+ FILE *mf;
+ char *time, *element, *value, *address;
+ char svalue[E_SIZE];
  
-	// Array of asserts
-	asserts =(ASSERT_DATA *) malloc(MAX_ASSERTS*sizeof(ASSERT_DATA));
 
-	// Heap of index of asserts
-	//  assertsQueue = (heapItem *) malloc (MAX_ASSERTS*sizeof(heapItem));
-	assertsQueue = Heap_create(MAX_ASSERTS);
+ int lineNumber=0;;
+ int numberAsserts=0;
+ int rc=0;
+ int en;
 
-	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,81, POWERON, ASSERTS_FILE, MAX_ASSERTS);
+// All time asserts list is at the end of assersQueue in reverse order
+ beginOfAllTimeAsserts=MAX_ASSERTS;
+
+ mf=fopen(ASSERTS_FILE, "r");
+ if (mf==NULL) {
+	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,82,POWERON,0);
+	return -1;
+  }
+ 
+ // Array of asserts
+ asserts =(ASSERT_DATA *) malloc(MAX_ASSERTS*sizeof(ASSERT_DATA));
+
+ // Heap of index of asserts
+//  assertsQueue = (heapItem *) malloc (MAX_ASSERTS*sizeof(heapItem));
+ assertsQueue = Heap_create(MAX_ASSERTS);
+
+ ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,81, POWERON, ASSERTS_FILE, MAX_ASSERTS);
  
     
    while (fgets(lineRead,MAXLINELENGTH, mf) != NULL && numberAsserts<MAX_ASSERTS) {
@@ -318,8 +321,12 @@ void assertMsg(int time, int ele, int expectedValue, int realValue, int addr) {
 	  	// printf("Expected: '%s'; Real: '%s'", expectedValue, realValue);
 	  	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,89,ERROR, InstructionNames[expectedValue], InstructionNames[realValue]);
 	else
-		// printf("Expected: %d; Real: %d", expectedValue, realValue);
-		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,90,ERROR, expectedValue, realValue);
+		if ((en==PCB_ST) || (en==PCB_PC) || (en==PCB_PR) || (en==PCB_SP))
+		// printf("PID '%d'; Expected: '%s'; Real: '%s'", expectedValue, realValue);
+		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,96,ERROR, addr, expectedValue, realValue);
+		else
+			// printf("Expected: %d; Real: %d", expectedValue, realValue);		
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,90,ERROR, expectedValue, realValue);
 	
 	if ((en==RMEM_OP) || (en==RMEM_O1) || (en==RMEM_O2) || (en==AMEM_OP) || (en==AMEM_O1) || (en==AMEM_O2) || (en==RMEM) || (en==AMEM)) 
 		// printf("; Memory address: %d", addr);
@@ -513,22 +520,22 @@ void Asserts_CheckOneAssert(int na){
 		case PCB_ST:
 				valueInPCB=processTable[asserts[na].address].state;
 				if ((valueInPCB != asserts[na].value) || GEN_ASSERTS)
-					assertMsg(globalCounter,PCB_ST,asserts[na].value,valueInPCB,0);			
+					assertMsg(globalCounter,PCB_ST,asserts[na].value,valueInPCB,asserts[na].address);			
 				break;
 		case PCB_PC:
 				valueInPCB=processTable[asserts[na].address].copyOfPCRegister;
 				if ((valueInPCB != asserts[na].value) || GEN_ASSERTS)
-					assertMsg(globalCounter,PCB_PC,asserts[na].value,valueInPCB,0);			
+					assertMsg(globalCounter,PCB_PC,asserts[na].value,valueInPCB,asserts[na].address);			
 				break;
 		case PCB_PR:
 				valueInPCB=processTable[asserts[na].address].priority;
 				if ((valueInPCB != asserts[na].value) || GEN_ASSERTS)
-					assertMsg(globalCounter,PCB_PR,asserts[na].value,valueInPCB,0);			
+					assertMsg(globalCounter,PCB_PR,asserts[na].value,valueInPCB,asserts[na].address);			
 				break;
 		case PCB_SP:
 				valueInPCB=processTable[asserts[na].address].copyOfSPRegister;
 				if ((valueInPCB != asserts[na].value) || GEN_ASSERTS)
-					assertMsg(globalCounter,PCB_SP,asserts[na].value,valueInPCB,0);			
+					assertMsg(globalCounter,PCB_SP,asserts[na].value,valueInPCB,asserts[na].address);			
 				break;
 		case SP:  
 				if ((registerSP_CPU!=asserts[na].value)|| GEN_ASSERTS)
@@ -542,6 +549,16 @@ void Asserts_CheckOneAssert(int na){
 				if ((registerB_CPU!=asserts[na].value)|| GEN_ASSERTS)
 					assertMsg(globalCounter,RB,asserts[na].value,registerB_CPU,0);
 				break;
+		case RC:  
+				if ((registerC_CPU!=asserts[na].value)|| GEN_ASSERTS)
+					assertMsg(globalCounter,RC,asserts[na].value,registerC_CPU,0);
+				break;
+#ifdef SLEEPINGQUEUE
+		case RD:  
+				if ((registerD_CPU!=asserts[na].value)|| GEN_ASSERTS)
+					assertMsg(globalCounter,RD,asserts[na].value,registerD_CPU,0);
+				break;
+#endif
 		default: ;
 
 	}

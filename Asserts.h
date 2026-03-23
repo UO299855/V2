@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #ifndef CHECKASSERTS_H
 #define CHECKASSERTS_H
 
@@ -42,6 +42,10 @@ enum assertList {
 ,SP=32		// Stack Pointer Register
 ,RA=33		// Register A
 ,RB=34		// Register B
+,RC=35		// Register C
+#ifdef SLEEPINGQUEUE
+,RD=36		// Register D
+#endif
 };
 
 typedef struct {

@@ -49,8 +49,39 @@ void Processor_InstructionCycleLoop() {
 
 // Update PSW state
 void Processor_UpdatePSW(){
+	int operationCode=Processor_DecodeOperationCode(registerIR_CPU);
+	int registerUsed, valueUsed;
+	switch (operationCode){
+		case READ_INST:
+		case INC_INST:
+		case MOV_INST:
+			registerUsed=Processor_DecodeOperand2(registerIR_CPU);
+		break;
+		case MEMADD_INST:
+			registerUsed=Processor_DecodeOperand1(registerIR_CPU);
+		break;
+		default:
+			registerUsed=REGISTERACCUMULATOR_CPU;
+		break;
+	}
+	switch (registerUsed)
+	{
+	case REGISTERACCUMULATOR_CPU:
+		valueUsed=registerAccumulator_CPU;
+		break;
+	case REGISTERA_CPU:
+		valueUsed=registerA_CPU;
+		break;
+	case REGISTERB_CPU:
+		valueUsed=registerB_CPU;
+		break;
+	default:
+		valueUsed=registerAccumulator_CPU;
+		break;
+	}
+
 	// Update ZERO_BIT
-	if (registerAccumulator_CPU==0){
+	if (valueUsed==0){
 		if (!Processor_PSW_BitState(ZERO_BIT))
 			Processor_ActivatePSW_Bit(ZERO_BIT);
 	}
@@ -60,7 +91,7 @@ void Processor_UpdatePSW(){
 	}
 	
 	// Update NEGATIVE_BIT
-	if (registerAccumulator_CPU<0) {
+	if (valueUsed<0) {
 		if (!Processor_PSW_BitState(NEGATIVE_BIT))
 			Processor_ActivatePSW_Bit(NEGATIVE_BIT);
 	}

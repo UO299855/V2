@@ -1,4 +1,4 @@
-// V1
+// V2-StudentsCode
 #include "OperatingSystemBase.h"
 #include "OperatingSystem.h"
 #include "Processor.h"
@@ -13,11 +13,16 @@
 // Functions prototypes
 int OperatingSystem_ObtainPositiveNumberOfFile(FILE *);
 void OperatingSystem_PrepareDaemons(int);
+void OperatingSystem_PrintSleepingProcessQueue();  // V2-studentsCode
+void OperatingSystem_PrintExecutingProcessInformation();  // V2-studentsCode
+void OperatingSystem_PrintProcessTableAssociation();  // V2-studentsCode
 
 extern int initialPID;
 extern int executingProcessID;	
 extern int MAINMEMORYSIZE;
 
+extern char * queueNames [];   // V2-studentsCode
+	
 char DAEMONS_PROGRAMS_FILE[MAXFILENAMELENGTH]="";
 
 char SYSTEM_IDLE_PROCESS[MAXFILENAMELENGTH]="SystemIdleProcess";
@@ -43,7 +48,6 @@ void OperatingSystem_LoadOperatingSystemCode(char * fileWithOSCode, int OS_addre
 	// Load Operating System Code
 	OperatingSystem_LoadProgram(programFile, OS_address_base, processSize);
 }
-
 
 // Search for a free entry in the process table. The index of the selected entry
 // will be used as the process identifier
@@ -185,8 +189,7 @@ void OperatingSystem_PrepareDaemons(int programListNextPosition) {
 	// Include a entry for SystemIdleProcess at 0 position
 	programList[0]=(PROGRAMS_DATA *) malloc(sizeof(PROGRAMS_DATA));
 
-	programList[0]->executableName=(char *) malloc((strlen(SYSTEM_IDLE_PROCESS)+1)*sizeof(char));
-	strcpy(programList[0]->executableName,SYSTEM_IDLE_PROCESS);
+	programList[0]->executableName="SystemIdleProcess";
 	programList[0]->arrivalTime=0;
 	programList[0]->type=DAEMONPROGRAM; // daemon program
 
@@ -194,17 +197,90 @@ void OperatingSystem_PrepareDaemons(int programListNextPosition) {
 
 	// Preparing aditionals daemons here
 	// index for aditionals programs in programList
-	char * daemonsProgramsPath=(char *) malloc((strlen(DAEMONS_PROGRAMS_FILE)+1)*sizeof(char));
-	strcpy(daemonsProgramsPath,DAEMONS_PROGRAMS_FILE);
-	programListNextPosition=ComputerSystem_PrepareAditionalPrograms(programListNextPosition,DAEMONPROGRAM,daemonsProgramsPath);
-	free(daemonsProgramsPath);
+	programListNextPosition=ComputerSystem_PrepareAditionalPrograms(programListNextPosition,DAEMONPROGRAM,DAEMONS_PROGRAMS_FILE);
+
 }
 
 void OperatingSystem_ReadyToShutdown(){
 	// Simulation must finish (done by modifying the PC of the System Idle Process so it points to its 'TRAP 3' instruction,
 	// located at the last memory position used by that process, and dispatching sipId (next ShortTermSheduled)
 	processTable[sipID].copyOfPCRegister=processTable[sipID].initialPhysicalAddress+processTable[sipID].processSize-1;
-	ComputerSystem_DebugMessage(TIMED_MESSAGE,99,SHUTDOWN,"The SystemIdleProcess is ready to shut down the simulator when dispatched...\n");
+	if (executingProcessID==sipID){
+	// or changing stacked PC pointing to TRAP 3 instruction if not dispatched because is running
+		Processor_SetSSP(MAINMEMORYSIZE-1);
+		Processor_PushInSystemStack(processTable[sipID].copyOfPCRegister);
+		// Processor_DeactivatePSW_Bit(INTERRUPT_MASKED_BIT);
+		Processor_PushInSystemStack(processTable[sipID].copyOfPSWRegister&(~((unsigned int)1<<15)));   //INTERRUPT_MASKED_BIT=15
+		// Processor_ActivatePSW_Bit(INTERRUPT_MASKED_BIT);
+	}
+}
+
+// Show general status
+void OperatingSystem_PrintStatus(){   // V2-studentsCode
+	OperatingSystem_PrintExecutingProcessInformation(); // Show executing process information
+	OperatingSystem_PrintReadyToRunQueue();  // Show Ready to run queues implemented for students
+	OperatingSystem_PrintSleepingProcessQueue(); // Show Sleeping process queue
+	OperatingSystem_PrintProcessTableAssociation(); // Show PID-Program's name association
+
+}
+
+ // Show Executing process information
+void OperatingSystem_PrintExecutingProcessInformation(){   // V2-studentsCode
+
+	// OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
+	if (executingProcessID>=0)
+#ifdef SLEEPINGQUEUE
+		// Show message "Running Process Information:\n\t\t[PID: executingProcessID, Priority: priority, WakeUp: whenToWakeUp, Queue: queueID]\n"
+		ComputerSystem_DebugMessage(TIMED_MESSAGE,74,SHORTTERMSCHEDULE,
+			executingProcessID,processTable[executingProcessID].priority,processTable[executingProcessID].whenToWakeUp
+			,queueNames[processTable[executingProcessID].queueID]);
+#else
+		// Show message "Running Process Information:\n\t\t[PID: executingProcessID, Priority: priority Queue: queueID]\n"
+		ComputerSystem_DebugMessage(TIMED_MESSAGE,78,SHORTTERMSCHEDULE,
+			executingProcessID,processTable[executingProcessID].priority,
+			queueNames[processTable[executingProcessID].queueID]);
+#endif
+	else
+		ComputerSystem_DebugMessage(TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"Running Process Information:\n\t\t[--- No running process ---]\n");
+
+}
+
+// Show SleepingProcessQueue 
+void OperatingSystem_PrintSleepingProcessQueue(){   // V2-studentsCode
+#ifdef SLEEPINGQUEUE
+
+	int i;
+	// OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
+	//  Show message "SLEEPING Queue:\n\t\t");
+	ComputerSystem_DebugMessage(TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"SLEEPING Queue:\n\t\t");
+	if (numberOfSleepingProcesses>0)
+		for (i=0; i< numberOfSleepingProcesses; i++) {
+			// Show message [PID, priority, whenToWakeUp]
+			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,75,SHORTTERMSCHEDULE
+				, sleepingProcessesQueue[i].info
+				, processTable[sleepingProcessesQueue[i].info].priority
+				, processTable[sleepingProcessesQueue[i].info].whenToWakeUp);
+			if (i<numberOfSleepingProcesses-1)
+	  			ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,", ");
+  		}
+  	else 
+	  	ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"[--- empty queue ---]");
+  ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"\n");
+
+#endif
+}
+
+void OperatingSystem_PrintProcessTableAssociation() {  // V2-studentsCode
+  int i;
+//   OperatingSystem_ShowTime(SHORTTERMSCHEDULE);
+  //  Show message "Process table association with program's name:");
+  ComputerSystem_DebugMessage(TIMED_MESSAGE,100,SHORTTERMSCHEDULE,"PID association with program's name:\n");
+  for (i=0; i< PROCESSTABLEMAXSIZE; i++) {
+  	if (processTable[i].busy) {
+  		// Show message PID -> program's name\n
+  		ComputerSystem_DebugMessage(NO_TIMED_MESSAGE,76,SHORTTERMSCHEDULE,i,programList[processTable[i].programListIndex]->executableName);
+  	}
+  }
 }
 
 int OperatingSystem_GetExecutingProcessID(){

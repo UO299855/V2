@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +14,6 @@
 // Functions prototypes
 int Simulator_GetOption(char *);
 void Simulator_LoadDebugMessages();
-
 
 extern int initialPID;
 extern int endSimulationTime; // To end simulation forced by time
@@ -48,13 +47,14 @@ int main(int argc, char *argv[]) {
 	int i, rc, numPrograms=0, isOption=1, thereAreProgramFileOption=0;
 	char *option, *optionValue;
 	int numericDefaultValue;
-	// the options must be always before programs in the command line
+	// the options must be always before programs
 	for (i=paramIndex; (i < argc) && isOption ;) {
 		if ((argv[i][0]=='-') && (argv[i][1]=='-')) {
 			option=strtok((char *)&(argv[i][2]),"=");
 			optionValue=strtok(NULL," ");
 			int optionIndex=Simulator_GetOption(option);
-			rc=sscanf(optionsDefault[optionIndex],"%d",&numericDefaultValue);
+			if (optionIndex>=0)
+				rc=sscanf(optionsDefault[optionIndex],"%d",&numericDefaultValue);
 
 			switch (optionIndex) {
 				// case INITIALPID:
@@ -156,6 +156,11 @@ int main(int argc, char *argv[]) {
 								printf("\t%s\n",options[j]);
 					}
 					break;
+				// case INTERVALBETWEENINTERRUPTS:
+				case intervalBetweenInterrupts_OPT:  // V2-studentsCode
+					if (optionValue==NULL || sscanf(optionValue,"%d",&intervalBetweenInterrupts)<1 || intervalBetweenInterrupts<5)
+						intervalBetweenInterrupts=numericDefaultValue;
+					break;
 				default :
 					printf("Invalid option: %s\n", option);
 					break;
@@ -164,7 +169,6 @@ int main(int argc, char *argv[]) {
 		} // End of if is option
 		else isOption=0;
 	} // End of loop processing options
-
 	paramIndex=i; // Next parameter that is not an option parameter
 
 	mainMemory = (MEMORYCELL *) malloc(MAINMEMORYSIZE*sizeof(MEMORYCELL));
@@ -211,9 +215,7 @@ int main(int argc, char *argv[]) {
 	Simulator_LoadDebugMessages();
 
 	// Prepare if necesary the assert system
-	Asserts_LoadAsserts();
-
-
+	Asserts_LoadAsserts();															 
 
 	// The simulation starts
 	ComputerSystem_PowerOn(argc, argv, paramIndex);
@@ -240,4 +242,4 @@ void Simulator_LoadDebugMessages() {
 		exit(2);
 	}
 	nm=Messages_Load_Messages(nm,STUDENT_MESSAGES_FILE);
-}
+}					  

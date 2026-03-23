@@ -8,7 +8,7 @@ PROGRAM = 	Simulator
 # Compilation Details
 SHELL = /bin/sh
 CC = cc
-STDCFLAGS = -g -c -Wall -O0 -Wextra
+STDCFLAGS = -g -c -Wall -O0 -Wextra -Werror
 INCLUDES =
 LIBRERIAS = 
 WRAP = -Wl,-wrap,OperatingSystem_InterruptLogic,-wrap,Processor_FetchInstruction,-wrap,Processor_InstructionCycleLoop,-wrap,Processor_DecodeAndExecuteInstruction

@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #ifndef OPERATINGSYSTEMBASE_H
 #define OPERATINGSYSTEMBASE_H
 
@@ -17,6 +17,8 @@ void OperatingSystem_ReadyToShutdown();
 void OperatingSystem_PrepareDaemons(int);
 int OperatingSystem_GetExecutingProcessID();
 int OperatingSystem_IsThereANewProgram();
+void OperatingSystem_PrintStatus();  // V2-studentsCode
+void OperatingSystem_PrintReadyToRunQueue();  // V2-studentsCode
 
 #define EMPTYQUEUE -1
 #define NO 0
@@ -35,4 +37,10 @@ extern char OPERATING_SYSTEM_CODE_FILE[];
 
 extern int numberOfProgramsInArrivalTimeQueue;
 extern heapItem * arrivalTimeQueue;
+
+#ifdef SLEEPINGQUEUE
+extern heapItem *sleepingProcessesQueue;  // V2-studentsCode
+extern int numberOfSleepingProcesses;   // V2-studentsCode
+#endif
+
 #endif

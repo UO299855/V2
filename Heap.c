@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
@@ -25,7 +25,7 @@ heapItem * Heap_create(int maxSize){
 // Insertion of a PID into a binary heap
 // info: PID or other info to insert
 // heap: Binary heap to insert: user o daemon ready queue, sleeping queue, ...
-// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, ...
+// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, QUEUE_WAKEUP, ...
 // numElem: number of elements actually into the queue, if successful is increased by one
 // limit: max size of the queue
 // return 0/-1  ok/fail
@@ -40,9 +40,9 @@ int Heap_add(int info, heapItem heap[], int queueType, int *numElem){ //, int li
 	return 0;
 }
 
-// Extract the highest priority item
+// Extract the more priority item
 // heap: Binary heap to extract: user o daemon ready queue, sleeping queue, ...
-// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, ...
+// queueType: QUEUE_PRIORITY, QUEUE_ASSERT, QUEUE_WAKEUP, ...
 // numElem: number of elements actually into the queue, if successful is decremented by one
 // return more priority item into the queue
 int Heap_poll(heapItem heap[], int queueType, int *numElem) {
@@ -108,20 +108,34 @@ void Heap_swap_Down(int p, heapItem heap[], int queueType, int numElem) {
 	} // leaf-node...
 }
 
-// Auxiliary function for priority comparations
+// Auxiliary for priority comparations
 int Heap_compare_priority(int value1, int value2) {
   return processTable[value2].priority-processTable[value1].priority;
 }
 
-// Auxiliary function for assert-time comparations
+// Auxiliary for  WakeUp-time comparations
+int Heap_compare_wakeup(int value1, int value2) {
+#ifdef SLEEPINGQUEUE
+	return processTable[value2].whenToWakeUp - processTable[value1].whenToWakeUp;
+#else 
+	if (value1==value2) return 0; // for avoid warning until SLEEPINGQUEUE...
+	return 0;
+
+#endif
+}
+
+// Auxiliary for assert-time comparations
 int Heap_compare_assertsTime(int value1, int value2) {
   return asserts[value2].time - asserts[value1].time;
 }
 
-// Auxiliary function for generic comparations
+// Auxiliary for generic comparations
 int Heap_compare(heapItem value1, heapItem value2, int queueType) {
   int primaryKey=0;
   switch (queueType) {
+	case QUEUE_WAKEUP:
+		primaryKey= Heap_compare_wakeup(value1.info, value2.info);
+		break;
 	case QUEUE_PRIORITY:
 		primaryKey= Heap_compare_priority(value1.info, value2.info);
 		break;
@@ -136,7 +150,7 @@ int Heap_compare(heapItem value1, heapItem value2, int queueType) {
 
 }
 
-// Auxiliary function for secondaryKey comparations
+// Auxiliary for secondaryKey comparations
 int Heap_InsertionTime(unsigned int value1, unsigned int value2){
 	return value2 - value1;
 }
@@ -166,6 +180,11 @@ int Heap_getValueUsedForOrdering(int id, int queueType) {
 		break;
 	case QUEUE_ASSERTS:
 		value= asserts[id].time;
+		break;
+	case QUEUE_WAKEUP:
+#ifdef SLEEPINGQUEUE
+		value= processTable[id].whenToWakeUp;
+#endif 	
 		break;
   }
   return value;

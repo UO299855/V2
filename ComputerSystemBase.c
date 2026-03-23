@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -24,6 +24,8 @@ char defaultDebugLevel[]="A";
 char *debugLevel=defaultDebugLevel;
 
 int endSimulationTime=-1; // For end simulation forced by time
+
+int intervalBetweenInterrupts = DEFAULT_INTERVAL_BETWEEN_INTERRUPTS; // Default value V2-studentsCode
 
 // Only one colour messages. Set to 1 for more colours checking uppercase in debugLevel
 int COLOURED = 0 ;
@@ -249,7 +251,7 @@ int ComputerSystem_PrepareAditionalPrograms(int programListNextPosition, int typ
     	
     	progData=(PROGRAMS_DATA *) malloc(sizeof(PROGRAMS_DATA));
     	progData->executableName = (char *) malloc((strlen(name)+1)*sizeof(char));
-		strcpy(progData->executableName,name);
+    	strcpy(progData->executableName,name);
     	progData->arrivalTime=time;
     	progData->type=type;
     	programList[programListNextPosition++]=progData;
@@ -260,6 +262,7 @@ int ComputerSystem_PrepareAditionalPrograms(int programListNextPosition, int typ
 
 	return programListNextPosition;
 }
+
 
 // Fill ArrivalTimeQueue heap with user program from parameters or file and daemons 
 void ComputerSystem_FillInArrivalTimeQueue() { 
@@ -292,3 +295,4 @@ void ComputerSystem_PrintArrivalTimeQueue(){
   }
 
 }
+

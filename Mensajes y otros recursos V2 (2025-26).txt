@@ -1,0 +1,40 @@
+Ejercicio/Exercise 1:
+
+	CLOCKINT_BIT=9
+	
+	// In OperatingSystem.c  Exercise 1-b of V2
+	void OperatingSystem_HandleClockInterrupt(){ return; }
+
+	
+Ejercicio/Exercise 2:
+
+	INTERRUPT_MASKED_BIT=15
+	
+	if (Processor_PSW_BitState(INTERRUPT_MASKED_BIT))
+		pswmask[tam-INTERRUPT_MASKED_BIT]='M';
+
+Ejercicio/Exercise 5:
+
+	int whenToWakeUp;  // Exercise 5-a of V2
+
+	// In OperatingSystem.c  Exercise 5-b of V2
+	// Heap with blocked processes, sorted by when-to-wakeup
+	heapItem *sleepingProcessesQueue;
+	int numberOfSleepingProcesses=0;
+
+	#define SLEEPINGQUEUE
+	
+	./Simulator programSleepingForAWhile | head -n 200
+	
+	// programSleepingForAWhile 
+	10
+	3
+	ADD -5 0
+	TRAP 7 -2
+	TRAP 3
+
+
+Ejercicio/Exercise 6:
+
+	[27] Process [1 - prNam1] will be thrown out of the processor by process [2 - prNam2]
+	

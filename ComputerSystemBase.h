@@ -1,4 +1,4 @@
-// V1
+// V2-studentsCode
 #ifndef COMPUTERSYSTEMBASE_H
 #define COMPUTERSYSTEMBASE_H
 
@@ -38,5 +38,8 @@ typedef struct ProgramData {
 
 // This "extern" declarations enables other source code files to gain access to the variables 
 extern char defaultDebugLevel[];
+extern int intervalBetweenInterrupts; // V2-studentsCode
+
+#define DEFAULT_INTERVAL_BETWEEN_INTERRUPTS 5 // V2-studentsCode
 
 #endif
