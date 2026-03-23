@@ -4,12 +4,14 @@
 
 int tics=0;
 
+// Ex 1: modification
 void Clock_Update() {
-	tics++;
+	if(++tics%intervalBetweenInterrupts == 0) {
+		Processor_RaiseInterrupt(CLOCKINT_BIT);
+	}
 }
 
 
 int Clock_GetTime() {
-
 	return tics;
 }

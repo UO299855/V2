@@ -14,6 +14,8 @@
 // Custom
 void OperatingSystem_PrintReadyToRunQueue();
 void OperatingSystem_HandleYield();
+// Ex1: modification
+void OperatingSystem_HandleClockInterrupt();
 
 // Default
 void OperatingSystem_PCBInitialization(int, int, int, int, int);
@@ -30,6 +32,11 @@ int OperatingSystem_ShortTermScheduler();
 int OperatingSystem_ExtractFromReadyToRunQueue(int queueID);
 void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
+
+// Custom variables
+// Ex 1: modification
+int numberOfClockInterrupts = 0;
+
 
 // The process table
 PCB * processTable;
@@ -113,6 +120,11 @@ void OperatingSystem_Initialize(int programsFromFileIndex) {
 		processTable[i].copyOfPCRegister=-1;
 		processTable[i].copyOfPSWRegister=0;
 		processTable[i].programListIndex=-1;
+
+		processTable[i].copyOfAccumRegister = -1;
+		processTable[i].copyOfARegister = -1;
+		processTable[i].copyOfBRegister = -1;
+		processTable[i].copyOfCRegister = -1;		
 	}
 	// Initialization of the interrupt vector table of the processor
 	Processor_InitializeInterruptVectorTable(OS_address_base+2);
@@ -179,7 +191,6 @@ int OperatingSystem_LongTermScheduler() {
 			default:
 				// Process creation has succeeded: additional actions
 				// Show message "Process [createdProcessPID] created from program [executableName]\n"
-				// Ex 12: modified message
 				ComputerSystem_DebugMessage(TIMED_MESSAGE,54,SYSPROC,createdProcessPID,statesNames[NEW],programList[i]->executableName);
 				numberOfSuccessfullyCreatedProcesses++;
 				if (programList[i]->type==USERPROGRAM) 
@@ -247,7 +258,6 @@ int OperatingSystem_ObtainMainMemory(int processSize, int PID) {
 
 
 // Assign initial values to all fields inside the PCB
-// Ex 15: modified
 void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int processSize, int priority, int processPLIndex) {
 
 	processTable[PID].busy=1;
@@ -264,15 +274,13 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].copyOfCRegister = 0;
 	
 
-	// Ex 13: proper queue assignment
 	// Daemons run in protected mode and MMU use real address
 	if (programList[processPLIndex]->type == DAEMONPROGRAM) {
-		processTable[PID].queueID=DAEMONSQUEUE; // Queue assignment (ex 13)
+		processTable[PID].queueID=DAEMONSQUEUE;
 		processTable[PID].copyOfPCRegister=initialPhysicalAddress;
 		processTable[PID].copyOfPSWRegister= ((unsigned int) 1) << EXECUTION_MODE_BIT;
 	} 
 	else {
-		// Ex 13: User program queue assignment
 		processTable[PID].queueID= processSize < 30? HIGHPRIOUSERPROCQUEUE : LOWPRIOUSERPROCQUEUE;
 		processTable[PID].copyOfPCRegister=0;
 		processTable[PID].copyOfPSWRegister=0;
@@ -287,7 +295,6 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 	int processQueueID = processTable[PID].queueID;
 
 	if (Heap_add(PID, readyToRunQueue[processQueueID],QUEUE_PRIORITY ,&(numberOfReadyToRunProcesses[processQueueID]))>=0) {
-		// Ex 12: logging the state change
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName,
 			statesNames[processTable[PID].state], statesNames[READY]);
 
@@ -305,7 +312,6 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 // It uses processes priorities to make the decission. Given that the READY queue is ordered
 // depending on processes priority, the STS just selects the process in front of the READY queue
 
-// Ex 13 modification
 int OperatingSystem_ShortTermScheduler() {
 	
 	int selectedProcess = NOPROCESS;
@@ -335,15 +341,12 @@ void OperatingSystem_Dispatch(int PID) {
 	// The process identified by PID becomes the current executing process
 	executingProcessID=PID;
 
-	// Ex 12: logging the state change
-	// Ex 13: multiple queues involved
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName,
 		statesNames[processTable[PID].state], statesNames[EXECUTING]);
 	
 	// Change the process' state
 	processTable[PID].state=EXECUTING;
 
-	// Ex 13c: log ready-to-run after dispatching
 	OperatingSystem_PrintReadyToRunQueue();
 
 	// Modify hardware registers with appropriate values for the process identified by PID
@@ -359,7 +362,6 @@ void OperatingSystem_RestoreContext(int PID) {
 	Processor_PushInSystemStack(processTable[PID].copyOfPSWRegister);
 	Processor_SetRegisterSP(processTable[PID].copyOfSPRegister);
 
-	//Ex 15: modifications
 	Processor_SetAccumulator(processTable[PID].copyOfAccumRegister);	
 	Processor_SetRegisterA(processTable[PID].copyOfARegister);
 	Processor_SetRegisterB(processTable[PID].copyOfBRegister);
@@ -393,7 +395,6 @@ void OperatingSystem_SaveContext(int PID) {
 	// Save RegisterSP 
 	processTable[PID].copyOfSPRegister=Processor_GetRegisterSP();
 
-	// Ex 15: modification
 	processTable[PID].copyOfAccumRegister = Processor_GetAccumulator();
 	processTable[PID].copyOfARegister = Processor_GetRegisterA();
 	processTable[PID].copyOfBRegister = Processor_GetRegisterB();
@@ -412,7 +413,6 @@ void OperatingSystem_HandleException() {
 
 // All tasks regarding the removal of the executing process
 void OperatingSystem_TerminateExecutingProcess() {
-	// Ex 12: log the state change
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName,
 		statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
 	processTable[executingProcessID].state=EXIT;
@@ -463,7 +463,7 @@ void OperatingSystem_HandleSystemCall() {
 			ComputerSystem_DebugMessage(TIMED_MESSAGE,73,SYSPROC,executingProcessID,programList[processTable[executingProcessID].programListIndex]->executableName);
 			OperatingSystem_TerminateExecutingProcess();
 			break;
-		// Ex 14: SYSCALL_YIELD = 4
+			
 		case SYSCALL_YIELD:
 			OperatingSystem_HandleYield();
 			break;
@@ -478,6 +478,10 @@ void OperatingSystem_InterruptLogic(int entryPoint){
 			break;
 		case EXCEPTION_BIT: // EXCEPTION_BIT=6
 			OperatingSystem_HandleException();
+			break;
+		// Ex 1: modification
+		case CLOCKINT_BIT: //CLOCKINT_BIT=9
+			OperatingSystem_HandleClockInterrupt();
 			break;
 	}
 }
@@ -506,4 +510,11 @@ void OperatingSystem_HandleYield() {
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 56, SHORTTERMSCHEDULE, executingProcessID,
 			programList[processTable[executingProcessID].programListIndex]->executableName);
 	}
+}
+
+//Ex 1: modification
+void OperatingSystem_HandleClockInterrupt() {
+	numberOfClockInterrupts++;
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 57, INTERRUPT,numberOfClockInterrupts);
+	return; 
 }

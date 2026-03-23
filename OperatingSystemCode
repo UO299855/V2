@@ -6,3 +6,6 @@ OS 2 // SysCall Interrupt
 IRET
 OS 6 // Exception Interrupt
 IRET
+// Custom interrupt handlers
+OS 9 // Ex 1: Clock Interrupt
+IRET

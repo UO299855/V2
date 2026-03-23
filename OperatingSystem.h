@@ -15,7 +15,6 @@
 #define NOPROCESS -1
 
 // Number of queues of ready to run processes, initially one queue...
-// Ex 13: modified to add 3 queues
 #define NUMBEROFQUEUES 3
 enum TypeOfReadyToRunProcessQueues { HIGHPRIOUSERPROCQUEUE,LOWPRIOUSERPROCQUEUE, DAEMONSQUEUE }	; 
 
@@ -26,11 +25,9 @@ enum ProgramTypes { USERPROGRAM=100, DAEMONPROGRAM };
 enum ProcessStates { NEW, READY, EXECUTING, BLOCKED, EXIT};
 
 // Enumerated type containing the list of system calls and their numeric identifiers
-// Ex 14: modified
 enum SystemCallIdentifiers { SYSCALL_END=3, SYSCALL_YIELD=4, SYSCALL_PRINTEXECINFO=5};
 
 // A PCB contains all of the information about a process that is needed by the OS
-// Ex 15: modified
 typedef struct {
 	int busy;
 	int initialPhysicalAddress;

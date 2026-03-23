@@ -71,7 +71,6 @@ void Processor_SetRegisterA(int);
 // The OS needs to access registerB
 void Processor_SetRegisterB(int);
 
-// Ex 15: modification
 void Processor_SetRegisterC(int);
 
 // The OS needs to access the PSW register to restore the context of
