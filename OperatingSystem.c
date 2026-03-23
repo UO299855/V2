@@ -310,8 +310,8 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 
 	}
 
-	// Exercise 11 && 13
-	OperatingSystem_PrintReadyToRunQueue();
+	// Ex 4: modification
+	//OperatingSystem_PrintReadyToRunQueue();
 }
 
 
@@ -354,7 +354,8 @@ void OperatingSystem_Dispatch(int PID) {
 	// Change the process' state
 	processTable[PID].state=EXECUTING;
 
-	OperatingSystem_PrintReadyToRunQueue();
+	// Ex 4:
+	//OperatingSystem_PrintReadyToRunQueue();
 
 	// Modify hardware registers with appropriate values for the process identified by PID
 	OperatingSystem_RestoreContext(PID);
