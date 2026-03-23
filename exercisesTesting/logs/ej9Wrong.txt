@@ -1,0 +1,49 @@
+41 messages loaded from file 'messagesTCH.txt'
+
+2 messages loaded from file 'messagesSTD.txt'
+
+0 Asserts Loaded
+
+[[1;31m0[0m] 
+[0m[1;31mSTARTING simulation
+[0m
+[0m[[1;31m0[0m] 
+[0mUser programs list:
+
+	Program [[1;36mprog-V1-E9[0m] with arrival time [[1;36m0[0m]
+[0m	
+[[1;31m0[0m] 
+[0mArrival Time Queue:
+
+		[[1;32mSystemIdleProcess[0m, [1;31m0[0m, [1;32mDAEMON-PROGRAM[0m]
+
+[0m		[[1;32mprog-V1-E9[0m, [1;31m0[0m, [1;32mUSER-PROGRAM[0m]
+
+[0m	
+[[1;31m0[0m] 
+[0m[1;32mProcess [0] created from program [SystemIdleProcess][0m
+
+[0m	
+[[1;31m0[0m] 
+[0m[1;32mProcess [1] created from program [prog-V1-E9][0m
+
+[0m[[1;31m1[0m] 
+[0m{0D 000 000}
+ IRET 0 0 (PID: [1;32m1[0m, PC: [1;31m0[0m, Accumulator: [1;31m0[0m, PSW: [1;31m0002[0m [[1;31m--------------Z-[0m], IntLine: [[1;31m0000[0m])
+
+[0m[2] 
+{01 013 000}
+ ADD 19 0 (PID: [1;32m1[0m, PC: [1;31m1[0m, Accumulator: [1;31m19[0m, PSW: [1;31m0000[0m [[1;31m----------------[0m], IntLine: [[1;31m0000[0m])
+
+[0m[3] 
+{08 014 000}
+ WRITE 20 0 (PID: [1;32m1[0m, PC: [1;31m2[0m, Accumulator: [1;31m19[0m, PSW: [1;31m0000[0m [[1;31m----------------[0m], IntLine: [[1;31m0000[0m])
+
+[0m[4] 
+_ _ _
+
+[5] 
+_ _ _
+
+[6] 
+_ _ _

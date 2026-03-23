@@ -1,0 +1,164 @@
+41 messages loaded from file 'messagesTCH.txt'
+
+2 messages loaded from file 'messagesSTD.txt'
+
+0 Asserts Loaded
+
+[[1;31m0[0m] 
+[0m[1;31mSTARTING simulation
+[0m
+[0m[[1;31m0[0m] 
+[0mUser programs list:
+
+	Program [[1;36minvalidProgram[0m] with arrival time [[1;36m0[0m]
+[0m	
+[[1;31m0[0m] 
+[0mArrival Time Queue:
+
+		[[1;32mSystemIdleProcess[0m, [1;31m0[0m, [1;32mDAEMON-PROGRAM[0m]
+
+[0m		[[1;32minvalidProgram[0m, [1;31m0[0m, [1;32mUSER-PROGRAM[0m]
+
+[0m	
+[[1;31m0[0m] 
+[0m[1;32mProcess [0] created from program [SystemIdleProcess][0m
+
+[0m	
+[[1;31m0[0m] 
+[0m[1;32mProcess [1] created from program [invalidProgram][0m
+
+[0m[[1;31m1[0m] 
+[0m{0D 000 000}
+ IRET 0 0 (PID: [1;32m1[0m, PC: [1;31m0[0m, Accumulator: [1;31m0[0m, PSW: [1;31m0002[0m [[1;31m--------------Z-[0m], IntLine: [[1;31m0000[0m])
+
+[0m[2] 
+_ _ _
+
+[3] 
+_ _ _
+
+[4] 
+_ _ _
+
+[5] 
+_ _ _
+
+[6] 
+_ _ _
+
+[7] 
+_ _ _
+
+[8] 
+_ _ _
+
+[9] 
+_ _ _
+
+[10] 
+_ _ _
+
+[11] 
+_ _ _
+
+[12] 
+_ _ _
+
+[13] 
+_ _ _
+
+[14] 
+_ _ _
+
+[15] 
+_ _ _
+
+[16] 
+_ _ _
+
+[17] 
+_ _ _
+
+[18] 
+_ _ _
+
+[19] 
+_ _ _
+
+[20] 
+_ _ _
+
+[21] 
+_ _ _
+
+[22] 
+_ _ _
+
+[23] 
+_ _ _
+
+[24] 
+_ _ _
+
+[25] 
+_ _ _
+
+[26] 
+_ _ _
+
+[27] 
+_ _ _
+
+[28] 
+_ _ _
+
+[29] 
+_ _ _
+
+[30] 
+_ _ _
+
+[31] 
+_ _ _
+
+[32] 
+_ _ _
+
+[33] 
+_ _ _
+
+[34] 
+_ _ _
+
+[35] 
+_ _ _
+
+[36] 
+_ _ _
+
+[37] 
+_ _ _
+
+[38] 
+_ _ _
+
+[39] 
+_ _ _
+
+[40] 
+_ _ _
+
+[41] 
+_ _ _
+
+[42] 
+_ _ _
+
+[43] 
+_ _ _
+
+[44] 
+_ _ _
+
+[45] 
+_ _ _

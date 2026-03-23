@@ -1,0 +1,5 @@
+20
+2
+INC 20
+WRITE 15
+TRAP 3

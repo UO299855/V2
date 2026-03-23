@@ -1,0 +1,6 @@
+20 // Programa prog1
+1
+ADD 1 0
+TRAP 4 //Yield
+WRITE 14
+TRAP 3

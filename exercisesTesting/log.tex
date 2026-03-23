@@ -1,0 +1,128 @@
+41 messages loaded from file 'messagesTCH.txt'
+
+6 messages loaded from file 'messagesSTD.txt'
+
+0 Asserts Loaded
+
+[\textcolor{termred}{0}] \textcolor{termred}{STARTING simulation
+}	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{3}] created into the [\textcolor{termgreen}{NEW}] state from program [\textcolor{termgreen}{SystemIdleProcess}]
+
+	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{3} - \textcolor{termgreen}{SystemIdleProcess}] moving from the [\textcolor{termgreen}{NEW}] state to the [\textcolor{termgreen}{READY}] state
+
+	[\textcolor{termred}{0}] Ready-to-run process queue:
+
+ 		HIGHPRIOUSER: 
+
+		LOWPRIOUSER: 
+
+		DAEMONS: [\textcolor{termgreen}{3},100]
+
+	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{0}] created into the [\textcolor{termgreen}{NEW}] state from program [\textcolor{termgreen}{prog1}]
+
+	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{0} - \textcolor{termgreen}{prog1}] moving from the [\textcolor{termgreen}{NEW}] state to the [\textcolor{termgreen}{READY}] state
+
+	[\textcolor{termred}{0}] Ready-to-run process queue:
+
+ 		HIGHPRIOUSER: [\textcolor{termgreen}{0},1]
+
+		LOWPRIOUSER: 
+
+		DAEMONS: [\textcolor{termgreen}{3},100]
+
+	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{1}] created into the [\textcolor{termgreen}{NEW}] state from program [\textcolor{termgreen}{prog2}]
+
+	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{1} - \textcolor{termgreen}{prog2}] moving from the [\textcolor{termgreen}{NEW}] state to the [\textcolor{termgreen}{READY}] state
+
+	[\textcolor{termred}{0}] Ready-to-run process queue:
+
+ 		HIGHPRIOUSER: [\textcolor{termgreen}{0},1], [\textcolor{termgreen}{1},2]
+
+		LOWPRIOUSER: 
+
+		DAEMONS: [\textcolor{termgreen}{3},100]
+
+	[\textcolor{termred}{0}] Process [\textcolor{termgreen}{0} - \textcolor{termgreen}{prog1}] moving from the [\textcolor{termgreen}{READY}] state to the [\textcolor{termgreen}{EXECUTING}] state
+
+	[\textcolor{termred}{0}] Ready-to-run process queue:
+
+ 		HIGHPRIOUSER: [\textcolor{termgreen}{1},2]
+
+		LOWPRIOUSER: 
+
+		DAEMONS: [\textcolor{termgreen}{3},100]
+
+[\textcolor{termred}{1}] {0D 000 000} IRET 0 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{0}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0002} [\textcolor{termred}{--------------Z-}], IntLine: [\textcolor{termred}{0000}])
+
+[2] {01 001 000} ADD 1 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{1}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0000}])
+
+[3] {04 004 000} TRAP 4 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{2}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0004}])
+
+[\textcolor{termred}{4}] {0C 002 000} OS 2 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{242}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0080} [\textcolor{termred}{--------X-------}], IntLine: [\textcolor{termred}{0000}])
+
+	[\textcolor{termred}{5}] Process [\textcolor{termgreen}{0} - \textcolor{termgreen}{prog1}] cannot transfer the control of the processor to any process
+
+[\textcolor{termred}{6}] {0D 000 000} IRET 0 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{2}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0000}])
+
+[7] {08 00E 000} WRITE 14 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{3}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0000}])
+
+[8] {04 003 000} TRAP 3 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{4}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0004}])
+
+[\textcolor{termred}{9}] {0C 002 000} OS 2 0 (PID: \textcolor{termgreen}{0}, PC: \textcolor{termred}{242}, Accumulator: \textcolor{termred}{1}, PSW: \textcolor{termred}{0080} [\textcolor{termred}{--------X-------}], IntLine: [\textcolor{termred}{0000}])
+
+	[\textcolor{termred}{10}] \textcolor{termred}{Process [0 - prog1] has requested to terminate}
+
+	[\textcolor{termred}{10}] Process [\textcolor{termgreen}{0} - \textcolor{termgreen}{prog1}] moving from the [\textcolor{termgreen}{EXECUTING}] state to the [\textcolor{termgreen}{EXIT}] state
+
+	[\textcolor{termred}{10}] Process [\textcolor{termgreen}{1} - \textcolor{termgreen}{prog2}] moving from the [\textcolor{termgreen}{READY}] state to the [\textcolor{termgreen}{EXECUTING}] state
+
+	[\textcolor{termred}{10}] Ready-to-run process queue:
+
+ 		HIGHPRIOUSER: 
+
+		LOWPRIOUSER: 
+
+		DAEMONS: [\textcolor{termgreen}{3},100]
+
+[\textcolor{termred}{11}] {0D 000 000} IRET 0 0 (PID: \textcolor{termgreen}{1}, PC: \textcolor{termred}{0}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0002} [\textcolor{termred}{--------------Z-}], IntLine: [\textcolor{termred}{0000}])
+
+[12] {0A 014 000} INC 20 0 (PID: \textcolor{termgreen}{1}, PC: \textcolor{termred}{1}, Accumulator: \textcolor{termred}{20}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0000}])
+
+[13] {08 00F 000} WRITE 15 0 (PID: \textcolor{termgreen}{1}, PC: \textcolor{termred}{2}, Accumulator: \textcolor{termred}{20}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0000}])
+
+[14] {04 003 000} TRAP 3 0 (PID: \textcolor{termgreen}{1}, PC: \textcolor{termred}{3}, Accumulator: \textcolor{termred}{20}, PSW: \textcolor{termred}{0000} [\textcolor{termred}{----------------}], IntLine: [\textcolor{termred}{0004}])
+
+[\textcolor{termred}{15}] {0C 002 000} OS 2 0 (PID: \textcolor{termgreen}{1}, PC: \textcolor{termred}{242}, Accumulator: \textcolor{termred}{20}, PSW: \textcolor{termred}{0080} [\textcolor{termred}{--------X-------}], IntLine: [\textcolor{termred}{0000}])
+
+	[\textcolor{termred}{16}] \textcolor{termred}{Process [1 - prog2] has requested to terminate}
+
+	[\textcolor{termred}{16}] Process [\textcolor{termgreen}{1} - \textcolor{termgreen}{prog2}] moving from the [\textcolor{termgreen}{EXECUTING}] state to the [\textcolor{termgreen}{EXIT}] state
+
+[\textcolor{termred}{16}] \textcolor{termred}{The SystemIdleProcess is ready to shut down the simulator when dispatched...
+}	[\textcolor{termred}{16}] Process [\textcolor{termgreen}{3} - \textcolor{termgreen}{SystemIdleProcess}] moving from the [\textcolor{termgreen}{READY}] state to the [\textcolor{termgreen}{EXECUTING}] state
+
+	[\textcolor{termred}{16}] Ready-to-run process queue:
+
+ 		HIGHPRIOUSER: 
+
+		LOWPRIOUSER: 
+
+		DAEMONS: 
+
+[\textcolor{termred}{17}] {0D 000 000} IRET 0 0 (PID: \textcolor{termgreen}{3}, PC: \textcolor{termred}{183}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0082} [\textcolor{termred}{--------X-----Z-}], IntLine: [\textcolor{termred}{0000}])
+
+[\textcolor{termred}{18}] {04 003 000} TRAP 3 0 (PID: \textcolor{termgreen}{3}, PC: \textcolor{termred}{184}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0082} [\textcolor{termred}{--------X-----Z-}], IntLine: [\textcolor{termred}{0004}])
+
+[\textcolor{termred}{19}] {0C 002 000} OS 2 0 (PID: \textcolor{termgreen}{3}, PC: \textcolor{termred}{242}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0082} [\textcolor{termred}{--------X-----Z-}], IntLine: [\textcolor{termred}{0000}])
+
+	[\textcolor{termred}{20}] \textcolor{termred}{Process [3 - SystemIdleProcess] has requested to terminate}
+
+	[\textcolor{termred}{20}] Process [\textcolor{termgreen}{3} - \textcolor{termgreen}{SystemIdleProcess}] moving from the [\textcolor{termgreen}{EXECUTING}] state to the [\textcolor{termgreen}{EXIT}] state
+
+[\textcolor{termred}{20}] \textcolor{termred}{The system will shut down now...
+}[\textcolor{termred}{21}] {0D 000 000} IRET 0 0 (PID: \textcolor{termgreen}{-1}, PC: \textcolor{termred}{241}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0082} [\textcolor{termred}{--------X-----Z-}], IntLine: [\textcolor{termred}{0000}])
+
+[\textcolor{termred}{22}] {0B 000 000} HALT 0 0 (PID: \textcolor{termgreen}{-1}, PC: \textcolor{termred}{241}, Accumulator: \textcolor{termred}{0}, PSW: \textcolor{termred}{0083} [\textcolor{termred}{--------X-----ZS}], IntLine: [\textcolor{termred}{0000}])
+
+[\textcolor{termred}{22}] \textcolor{termred}{END of the simulation
+}
+
