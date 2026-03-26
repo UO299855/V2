@@ -28,7 +28,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Simulator",
-            "args": ["prog1"],
+            "args": ["programSleep"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

@@ -37,6 +37,11 @@ int interruptVectorTable[INTERRUPTTYPES];
 char pswmask []="----------------"; 
 
 
+// V2 exercises modifications
+// Ex 5: modification
+int registerD_CPU;
+
+
 // Initialization of the interrupt vector table
 void Processor_InitializeInterruptVectorTable(int interruptVectorInitialAddress) {
 	int i;
@@ -158,6 +163,8 @@ void Processor_DecodeAndExecuteInstruction() {
 			  
 		// Instruction TRAP
 		case TRAP_INST: 
+			// Ex 5: save operand 2 on D register
+			Processor_SetRegisterD(operand2);
 			Processor_RaiseInterrupt(SYSCALL_BIT);
 			registerC_CPU=operand1;
 			registerPC_CPU++;
@@ -399,3 +406,10 @@ char * Processor_ShowPSW(){
 
 /////////////////////////////////////////////////////////
 //  New functions below this line  //////////////////////
+int Processor_GetRegisterD() {
+	return registerD_CPU;
+}
+
+void Processor_SetRegisterD(int value) {
+	registerD_CPU = value;
+}

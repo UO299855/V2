@@ -25,7 +25,8 @@ enum ProgramTypes { USERPROGRAM=100, DAEMONPROGRAM };
 enum ProcessStates { NEW, READY, EXECUTING, BLOCKED, EXIT};
 
 // Enumerated type containing the list of system calls and their numeric identifiers
-enum SystemCallIdentifiers { SYSCALL_END=3, SYSCALL_YIELD=4, SYSCALL_PRINTEXECINFO=5};
+// Ex 5: modification (SYSCALL_SLEEP)
+enum SystemCallIdentifiers { SYSCALL_END=3, SYSCALL_YIELD=4, SYSCALL_PRINTEXECINFO=5, SYSCALL_SLEEP=7};
 
 // A PCB contains all of the information about a process that is needed by the OS
 typedef struct {
@@ -44,8 +45,14 @@ typedef struct {
 	int copyOfAccumRegister;	
 	int copyOfARegister;
 	int copyOfBRegister;
-	int copyOfCRegister;	
+	int copyOfCRegister;
+	
+	// Ex 5: modifications
+	int whenToWakeUp;
 } PCB;
+
+// Ex 5: modification
+#define SLEEPINGQUEUE
 
 // These "extern" declaration enables other source code files to gain access
 // to the variable listed

@@ -17,7 +17,6 @@
 enum PSW_BITS {POWEROFF_BIT=0, ZERO_BIT=1, NEGATIVE_BIT=2, OVERFLOW_BIT=3, EXECUTION_MODE_BIT=7, INTERRUPT_MASKED_BIT=15};
 
 
-
 // Enumerated type that connects bit positions in the interruptLines with
 // interrupt types 
 // Ex1: modification
@@ -34,5 +33,10 @@ void Processor_ManageInterrupts();
 char * Processor_ShowPSW();
 int Processor_GetCTRL();
 void Processor_SetCTRL(int);
+
+//Ex 5: moficications
+int Processor_GetRegisterD();
+void Processor_SetRegisterD(int);
+
 
 #endif

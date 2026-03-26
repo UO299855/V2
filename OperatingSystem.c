@@ -33,6 +33,10 @@ int OperatingSystem_ExtractFromReadyToRunQueue(int queueID);
 void OperatingSystem_HandleException();
 void OperatingSystem_HandleSystemCall();
 
+// Custom functions
+//Ex 5: modification
+void OperatingSystem_HandleSleep();
+
 // Custom variables
 // Ex 1: modification
 int numberOfClockInterrupts = 0;
@@ -72,10 +76,14 @@ extern int MAINMEMORYSIZE;
 
 int PROCESSTABLEMAXSIZE = 4;
 
-// Exercise 12
+// V1 exercises modifications
 char * statesNames [5]={"NEW","READY","EXECUTING","BLOCKED","EXIT"}; 
-// Exercise 13
 char * queueNames [NUMBEROFQUEUES]={"HIGHPRIOUSER","LOWPRIOUSER","DAEMONS"};
+
+// V2 exercises modifications
+// Ex 5: Heap with blocked processes, sorted by when-to-wakeup
+heapItem *sleepingProcessesQueue;
+int numberOfSleepingProcesses=0; 
 
 
 // Initial set of tasks of the OS
@@ -105,6 +113,9 @@ void OperatingSystem_Initialize(int programsFromFileIndex) {
 		numberOfReadyToRunProcesses[i]=0;
 	}
 
+	// Ex 5: modification, create sleeping queue
+	sleepingProcessesQueue = Heap_create(PROCESSTABLEMAXSIZE);
+
 	// Load Operating System Code
 	OperatingSystem_LoadOperatingSystemCode(OPERATING_SYSTEM_CODE_FILE, OS_address_base);
 	
@@ -124,7 +135,10 @@ void OperatingSystem_Initialize(int programsFromFileIndex) {
 		processTable[i].copyOfAccumRegister = -1;
 		processTable[i].copyOfARegister = -1;
 		processTable[i].copyOfBRegister = -1;
-		processTable[i].copyOfCRegister = -1;		
+		processTable[i].copyOfCRegister = -1;	
+		
+		// Ex 5: modification
+		processTable[i].whenToWakeUp = -1;
 	}
 	// Initialization of the interrupt vector table of the processor
 	Processor_InitializeInterruptVectorTable(OS_address_base+2);
@@ -279,6 +293,9 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].copyOfARegister = 0;
 	processTable[PID].copyOfBRegister = 0;
 	processTable[PID].copyOfCRegister = 0;
+
+	// Ex 5: modification
+	processTable[PID].whenToWakeUp = 0;
 	
 
 	// Daemons run in protected mode and MMU use real address
@@ -307,9 +324,7 @@ void OperatingSystem_MoveToTheREADYState(int PID) {
 
 		//  Change of state
 		processTable[PID].state=READY;
-
 	}
-
 	// Ex 4: modification
 	//OperatingSystem_PrintReadyToRunQueue();
 }
@@ -481,6 +496,11 @@ void OperatingSystem_HandleSystemCall() {
 		case SYSCALL_YIELD:
 			OperatingSystem_HandleYield();
 			break;
+
+		// Ex 5: modification
+		case SYSCALL_SLEEP:
+			OperatingSystem_HandleSleep();
+			break;
 	}
 }
 	
@@ -536,3 +556,28 @@ void OperatingSystem_HandleClockInterrupt() {
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 57, INTERRUPT,numberOfClockInterrupts);
 	return; 
 }
+
+// Ex 5: modification
+int OperatingSystem_MoveToTheBLOCKEDState(int PID) {
+	if (Heap_add(PID, sleepingProcessesQueue,QUEUE_WAKEUP ,&(numberOfSleepingProcesses))>=0) {
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName,
+			statesNames[processTable[PID].state], statesNames[BLOCKED]);			
+		//  Change of state
+		processTable[PID].state=BLOCKED;
+		processTable[executingProcessID].whenToWakeUp = 1 + numberOfClockInterrupts +
+					((Processor_GetRegisterD() > 0) ? Processor_GetRegisterD() : abs(Processor_GetAccumulator()));
+		return 0;
+	}
+	return -1;
+}
+// Ex5: modification
+void OperatingSystem_HandleSleep() {
+	//Only if we can add it to the appropriate heap
+	if (!OperatingSystem_MoveToTheBLOCKEDState(executingProcessID)) {
+		executingProcessID = NOPROCESS;
+		OperatingSystem_Dispatch(OperatingSystem_ShortTermScheduler());
+		OperatingSystem_PrintStatus();
+	}
+	return;
+}
+
