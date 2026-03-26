@@ -550,20 +550,45 @@ void OperatingSystem_HandleYield() {
 	}
 }
 
+// Ex 6: modification
+void OperatingSystem_CheckProcessesToWakeUp() {
+	int checking = 1;
+	int sleepingPID;
+	while(checking) {
+		// Check if there are asleep processes and/or if they are due for being awoken
+		if(((sleepingPID = Heap_getFirst(sleepingProcessesQueue, numberOfSleepingProcesses)) > 0)
+				&& processTable[sleepingPID].whenToWakeUp == numberOfClockInterrupts) {
+			// A process needs to wake up
+			Heap_poll(sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses);
+			OperatingSystem_MoveToTheREADYState(sleepingPID);
+
+		} else { // No more asleep processes or they need to sleep for longer
+			checking = 0;
+		}
+	}
+}
+
 //Ex 1: modification
 void OperatingSystem_HandleClockInterrupt() {
 	numberOfClockInterrupts++;
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 57, INTERRUPT,numberOfClockInterrupts);
+	// Ex 6: modification
+	OperatingSystem_CheckProcessesToWakeUp();
 	return; 
 }
 
 // Ex 5: modification
 int OperatingSystem_MoveToTheBLOCKEDState(int PID) {
 	if (Heap_add(PID, sleepingProcessesQueue,QUEUE_WAKEUP ,&(numberOfSleepingProcesses))>=0) {
+		// Saving context
+		OperatingSystem_SaveContext(executingProcessID);
+
+		// Logging the state change
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName,
 			statesNames[processTable[PID].state], statesNames[BLOCKED]);			
 		//  Change of state
 		processTable[PID].state=BLOCKED;
+		// When to wake up
 		processTable[executingProcessID].whenToWakeUp = 1 + numberOfClockInterrupts +
 					((Processor_GetRegisterD() > 0) ? Processor_GetRegisterD() : abs(Processor_GetAccumulator()));
 		return 0;
