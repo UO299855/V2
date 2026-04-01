@@ -551,21 +551,40 @@ void OperatingSystem_HandleYield() {
 }
 
 // Ex 6: modification
-void OperatingSystem_CheckProcessesToWakeUp() {
-	int checking = 1;
-	int sleepingPID;
+int OperatingSystem_CheckProcessesToWakeUp() {
+	int foundAny = 0, checking = 1, sleepingPID;
 	while(checking) {
 		// Check if there are asleep processes and/or if they are due for being awoken
-		if(((sleepingPID = Heap_getFirst(sleepingProcessesQueue, numberOfSleepingProcesses)) > 0)
+		if(((sleepingPID = Heap_getFirst(sleepingProcessesQueue, numberOfSleepingProcesses)) != -1)
 				&& processTable[sleepingPID].whenToWakeUp == numberOfClockInterrupts) {
 			// A process needs to wake up
 			Heap_poll(sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses);
 			OperatingSystem_MoveToTheREADYState(sleepingPID);
+			foundAny = 1;
 
 		} else { // No more asleep processes or they need to sleep for longer
 			checking = 0;
 		}
 	}
+	return foundAny;
+}
+
+// Ex 6: modification
+int OperatingSystem_CheckForHigherPriority() {
+	for(int queue = 0; queue < NUMBEROFQUEUES; queue++) {
+		int firstPID = Heap_getFirst(readyToRunQueue[queue], numberOfReadyToRunProcesses[queue]);
+		if(firstPID != -1 && processTable[firstPID].priority < processTable[executingProcessID].priority) {
+			// A more important process was found
+			ComputerSystem_DebugMessage(TIMED_MESSAGE, 58, SHORTTERMSCHEDULE, executingProcessID,
+				programList[processTable[executingProcessID].programListIndex]->executableName,
+				processTable[firstPID].priority,
+				programList[processTable[firstPID].programListIndex]->executableName);
+			OperatingSystem_PreemptRunningProcess();
+			OperatingSystem_Dispatch(firstPID);
+			return 1;
+		}
+	}
+	return 0;
 }
 
 //Ex 1: modification
@@ -573,7 +592,12 @@ void OperatingSystem_HandleClockInterrupt() {
 	numberOfClockInterrupts++;
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 57, INTERRUPT,numberOfClockInterrupts);
 	// Ex 6: modification
-	OperatingSystem_CheckProcessesToWakeUp();
+	if(OperatingSystem_CheckProcessesToWakeUp()) {
+		OperatingSystem_PrintStatus();
+		if(OperatingSystem_CheckForHigherPriority()) {
+			OperatingSystem_PrintStatus();
+		}
+	}
 	return; 
 }
 
