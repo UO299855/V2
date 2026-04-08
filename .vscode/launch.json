@@ -7,7 +7,13 @@
             "request": "launch",
             "program": "${workspaceFolder}/Simulator",
             "args": [
-                "prog1"
+                "--initialPID=1",
+                "--assertsFile=asserts_0_to_6",
+                "--debugSections=A",
+                "programV2-fa",
+                "program-DoesntExist",
+                "programV2-fb",
+                "programV2-fc"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -28,9 +34,17 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Simulator",
-            "args": ["programSleep"],
+            "args": [
+                "--initialPID=1",
+                "--assertsFile=asserts_0_to_6",
+                "--debugSections=A",
+                "programV2-fa",
+                "program-DoesntExist",
+                "programV2-fb",
+                "programV2-fc"
+            ],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
