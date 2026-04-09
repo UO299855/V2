@@ -506,26 +506,25 @@ de TRAP 7:
 Ahora queda establecer el comportamiento del manejador:
 
     // Ex 5: modification
-    int OperatingSystem_MoveToTheBLOCKEDState(int PID) {
-        if (Heap_add(PID, sleepingProcessesQueue, QUEUE_WAKEUP,
-                &(numberOfSleepingProcesses))>=0) {
-            // Saving context
-            OperatingSystem_SaveContext(executingProcessID);
-            // Logging the state change
-            ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID,
-                programList[processTable[PID].programListIndex]->executableName,
-                statesNames[processTable[PID].state], statesNames[BLOCKED]);
-            // Change of state
-            processTable[PID].state=BLOCKED;
-            // When to wake up
-            processTable[executingProcessID].whenToWakeUp =
-                1 + numberOfClockInterrupts +
-                ((Processor_GetRegisterD() > 0) ? Processor_GetRegisterD() :
-                abs(Processor_GetAccumulator()));
-            return 0;
-        }
-        return -1;
-    }
+int OperatingSystem_MoveToTheBLOCKEDState(int PID) {
+	// When to wake up
+	processTable[executingProcessID].whenToWakeUp = 1 + numberOfClockInterrupts +
+				((Processor_GetRegisterD() > 0) ? Processor_GetRegisterD() :
+					abs(Processor_GetAccumulator()));
+	if (Heap_add(PID, sleepingProcessesQueue,QUEUE_WAKEUP ,&(numberOfSleepingProcesses))>=0) {
+		// Saving context
+		OperatingSystem_SaveContext(executingProcessID);
+
+		// Logging the state change
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID,
+			programList[processTable[PID].programListIndex]->executableName,
+			statesNames[processTable[PID].state], statesNames[BLOCKED]);			
+		//  Change of state
+		processTable[PID].state=BLOCKED;		
+		return 0;
+	}
+	return -1;
+}
 
     // Ex5: modification
     void OperatingSystem_HandleSleep() {
@@ -537,6 +536,12 @@ Ahora queda establecer el comportamiento del manejador:
         }
         return;
     }
+
+    Importante: En este caso, tenemos que asignar el campo whenToWakeUp al
+proceso antes de insertarlo en la cola de dormidos, pues al a˜nadirlo al heap cor-
+respondiente se ordenar´an seg´un el valor de este campo. De no hacer este ajuste,
+como whenToWakeUp se inicializa por defecto a -1, el último proceso insertado iría
+siempre al inicio del montículo, incluso si tendr´ıa que despertarse m´as tarde.
 
 g) Imprimir el estado del sistema
 
@@ -693,27 +698,35 @@ c) Comprobar si el proceso en ejecucion sigue siendo el mas adecuado
 Desde OperatingSystem_HandleClockInterrumpt tambien llamaremos a la siguiente
 funcion:
 
+   // Ex 6: modification
     int OperatingSystem_CheckForHigherPriority() {
-        for(int queue = 0; queue < NUMBEROFQUEUES; queue++) {
-            int firstPID = Heap_getFirst(readyToRunQueue[queue],
-                numberOfReadyToRunProcesses[queue]);
-            if(firstPID != -1 && processTable[firstPID].priority <
-                    processTable[executingProcessID].priority) {
+        int maxQueue = processTable[executingProcessID].queueID;
+        for(int queue = 0; queue <= maxQueue; queue++) {
+            int firstPID = Heap_getFirst(readyToRunQueue[queue], numberOfReadyToRunProcesses[queue]);
+            if(firstPID != -1 && (queue < maxQueue ||
+                processTable[firstPID].priority < processTable[executingProcessID].priority)) {
                 // A more important process was found
-                ComputerSystem_DebugMessage(TIMED_MESSAGE, 58,
-                    SHORTTERMSCHEDULE, executingProcessID,
-                    programList[processTable[executingProcessID].programListIndex]
-                        ->executableName,
-                    processTable[firstPID].priority,
-                    programList[processTable[firstPID].programListIndex]
-                        ->executableName);
+                ComputerSystem_DebugMessage(TIMED_MESSAGE, 58, SHORTTERMSCHEDULE, executingProcessID,
+                programList[processTable[executingProcessID].programListIndex]->executableName,
+                firstPID,
+                programList[processTable[firstPID].programListIndex]->executableName);
+                OperatingSystem_ExtractFromReadyToRunQueue(queue);
                 OperatingSystem_PreemptRunningProcess();
                 OperatingSystem_Dispatch(firstPID);
                 return 1;
             }
         }
-        return 0;
+    return 0;
     }
+
+    Importante: no basta con mirar todas las colas y cambiar siempre que encontremos un
+proceso con menor campo de prioridad (m´as prioritario). Hemos de respetar el orden de
+las colas de prioridad. Analizamos todas las colas hasta llegar a la del proceso que
+está en ejecucón. Un proceso se considera m´as importante
+que el que se está ejecutando si tiene un queueID menor (está en una cola más
+prioritaria) o si pertenece a la misma cola que el proceso en ejecución y tiene menor
+campo priority (más prioritario).
+
 
 b) Imprimir el estado del sistema una vez se procese la cola de dormidos,
    en caso de haber desbloqueado un proceso
@@ -768,239 +781,163 @@ comprobar que se despierta al proceso dormido adecuadamente.
 
     $ ./Simulator programSleep
 
-    48 messages loaded from file messagesTCH.txt
-    6 messages loaded from file messagesSTD.txt
-    0 Asserts Loaded
-    [0] STARTING simulation
-    [0] User programs list:
-    Program [programSleep] with arrival time [0]
-    [0] Arrival Time Queue:
-    [SystemIdleProcess, 0, DAEMON-PROGRAM]
-    [programSleep, 0, USER-PROGRAM]
-    [0] Process [3] created into the [NEW] state, from program [SystemIdleProcess]
-    [0] Process [3 - SystemIdleProcess] moving from the [NEW] state to the [READY] state
-    [0] Running Process Information:
-    [--- No running process ---]
-    [0] Ready-to-run process queue:
-    HIGHPRIOUSER:
-    LOWPRIOUSER:
-    DAEMONS: [3,100]
-    [0] SLEEPING Queue:
-    [--- empty queue ---]
-    [0] PID association with program's name:
-    PID: 3 -> SystemIdleProcess
-    [0] Process [0] created into the [NEW] state, from program [programSleep]
-    [0] Process [0 - programSleep] moving from the [NEW] state to the [READY] state
-    [0] Running Process Information:
-    [--- No running process ---]
-    [0] Ready-to-run process queue:
-    HIGHPRIOUSER: [0,3]
-    LOWPRIOUSER:
-    DAEMONS: [3,100]
-    [0] SLEEPING Queue:
-    [--- empty queue ---]
-    [0] PID association with program's name:
-    PID: 0 -> programSleep
-    PID: 3 -> SystemIdleProcess
-    [0] Process [0 - programSleep] moving from the [READY] state to the [EXECUTING] state
-    [0] Running Process Information:
-    [PID: 0, Priority: 3, WakeUp: 0, Queue: HIGHPRIOUSER]
-    [0] Ready-to-run process queue:
-    HIGHPRIOUSER:
-    LOWPRIOUSER:
-    DAEMONS: [3,100]
-    [0] SLEEPING Queue:
-    [--- empty queue ---]
-    [0] PID association with program's name:
-    PID: 0 -> programSleep
-    PID: 3 -> SystemIdleProcess
-    [1] 0D 000 000 IRET 0 0 (PID: 0, PC: 0, Accumulator: 0, PSW: 0002
-        [--------------Z-], IntLine: [0000])
-    [2] 01 805 000 ADD -5 0 (PID: 0, PC: 1, Accumulator: -5, PSW: 0004
-        [-------------N--], IntLine: [0000])
-    [3] 04 007 802 TRAP 7 -2 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004
-        [-------------N--], IntLine: [0004])
-    [4] 0C 002 000 OS 2 0 (PID: 0, PC: 242, Accumulator: -5, PSW: 8084
-        [M-------X----N--], IntLine: [0000])
-    [5] Process [0 - programSleep] moving from the [EXECUTING] state to the [BLOCKED]
-        state
-    [5] Process [3 - SystemIdleProcess] moving from the [READY] state to the
-        [EXECUTING] state
+    [...Initialization...]
+
+    [1] 0D 000 000 IRET 0 0 (PID: 0, PC: 0, Accumulator: 0, PSW: 0002 [--------------Z-],
+    IntLine: [0000])
+    [2] 01 805 000 ADD -5 0 (PID: 0, PC: 1, Accumulator: -5, PSW: 0004 [-------------N--],
+    IntLine: [0000])
+    [3] 04 007 802 TRAP 7 -2 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004 [-------------N--],
+    IntLine: [0004])
+    [4] 0C 002 000 OS 2 0 (PID: 0, PC: 242, Accumulator: -5, PSW: 8084 [M-------X----N--],
+    IntLine: [0000])
+    [5] Process [0 - programSleep] moving from the [EXECUTING] state to the [BLOCKED] state
+    [5] Process [3 - SystemIdleProcess] moving from the [READY] state to the [EXECUTING]
+    state
     [5] Running Process Information:
-    [PID: 3, Priority: 100, WakeUp: 0, Queue: DAEMONS]
+    [PID: 3, Priority: 100, WakeUp: -1, Queue: DAEMONS]
     [5] Ready-to-run process queue:
     HIGHPRIOUSER:
     LOWPRIOUSER:
     DAEMONS:
     [5] SLEEPING Queue:
     [0, 3, 6]
-    [5] PID association with program's name:
+    [5] PID association with program’s name:
     PID: 0 -> programSleep
     PID: 3 -> SystemIdleProcess
-    [6] 0D 000 000 IRET 0 0 (PID: 3, PC: 180, Accumulator: 0, PSW: 0082
-        [--------X-----Z-], IntLine: [0200])
-    [7] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 0, PSW: 8082
-        [M-------X-----Z-], IntLine: [0000])
+    [6] 0D 000 000 IRET 0 0 (PID: 3, PC: 180, Accumulator: 0, PSW: 0082 [--------X-----Z-],
+    IntLine: [0200])
+    [7] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 0, PSW: 8082 [M-------X-----Z-],
+    IntLine: [0000])
     [8] Clock interrupt number [1] has occurred
-    [9] 0D 000 000 IRET 0 0 (PID: 3, PC: 180, Accumulator: 0, PSW: 0082
-        [--------X-----Z-], IntLine: [0000])
+    [9] 0D 000 000 IRET 0 0 (PID: 3, PC: 180, Accumulator: 0, PSW: 0082 [--------X-----Z-],
+    IntLine: [0000])
     [10] 01 5E2 398 ADD 1506 920 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [11] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0200])
+    [11] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [12] Clock interrupt number [2] has occurred
     [13] 0D 000 000 IRET 0 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
-    [14] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0000])
+    [14] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080 [--------X-------],
+    IntLine: [0000])
     [15] 06 801 000 JUMP -1 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [16] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0200])
+    [16] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [17] Clock interrupt number [3] has occurred
     [18] 0D 000 000 IRET 0 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
-    [19] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0000])
+    [19] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080 [--------X-------],
+    IntLine: [0000])
     [20] 06 801 000 JUMP -1 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [21] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0200])
+    [21] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [22] Clock interrupt number [4] has occurred
     [23] 0D 000 000 IRET 0 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
-    [24] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0000])
+    [24] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080 [--------X-------],
+    IntLine: [0000])
     [25] 06 801 000 JUMP -1 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [26] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0200])
+    [26] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [27] Clock interrupt number [5] has occurred
     [28] 0D 000 000 IRET 0 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
-    [29] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0000])
+    [29] 05 000 000 NOP 0 0 (PID: 3, PC: 182, Accumulator: 2426, PSW: 0080 [--------X-------],
+    IntLine: [0000])
     [30] 06 801 000 JUMP -1 0 (PID: 3, PC: 181, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [31] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
+    [--------X-------], IntLine: [0200])
+    [31] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [32] Clock interrupt number [6] has occurred
     [32] Process [0 - programSleep] moving from the [BLOCKED] state to the [READY] state
     [32] Running Process Information:
-    [PID: 3, Priority: 100, WakeUp: 0, Queue: DAEMONS]
+    [PID: 3, Priority: 100, WakeUp: -1, Queue: DAEMONS]
     [32] Ready-to-run process queue:
     HIGHPRIOUSER: [0,3]
     LOWPRIOUSER:
     DAEMONS:
     [32] SLEEPING Queue:
     [--- empty queue ---]
-    [32] PID association with program's name:
+    [32] PID association with program’s name:
     PID: 0 -> programSleep
     PID: 3 -> SystemIdleProcess
-    [32] Process [3 - SystemIdleProcess] will be thrown out of the processor by
-         process [3 - programSleep]
-    [32] Process [3 - SystemIdleProcess] moving from the [EXECUTING] state to the
-         [READY] state
-    [32] Process [0 - programSleep] moving from the [READY] state to the [EXECUTING]
-         state
+    [32] Process [3 - SystemIdleProcess] will be thrown out of the processor by process [0
+    - programSleep]
+    [32] Process [3 - SystemIdleProcess] moving from the [EXECUTING] state to the [READY]
+    state
+    [32] Process [0 - programSleep] moving from the [READY] state to the [EXECUTING] state
     [32] Running Process Information:
     [PID: 0, Priority: 3, WakeUp: 6, Queue: HIGHPRIOUSER]
     [32] Ready-to-run process queue:
-    HIGHPRIOUSER: [0,3]
+    HIGHPRIOUSER:
     LOWPRIOUSER:
     DAEMONS: [3,100]
     [32] SLEEPING Queue:
     [--- empty queue ---]
-    [32] PID association with program's name:
+    [32] PID association with program’s name:
     PID: 0 -> programSleep
     PID: 3 -> SystemIdleProcess
-    [33] 0D 000 000 IRET 0 0 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004
-         [-------------N--], IntLine: [0000])
-    [34] 04 003 000 TRAP 3 0 (PID: 0, PC: 3, Accumulator: -5, PSW: 0004
-         [-------------N--], IntLine: [0004])
-    [35] 0C 002 000 OS 2 0 (PID: 0, PC: 242, Accumulator: -5, PSW: 8084
-         [M-------X----N--], IntLine: [0200])
+    [33] 0D 000 000 IRET 0 0 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004 [-------------N--],
+    IntLine: [0000])
+    [34] 04 003 000 TRAP 3 0 (PID: 0, PC: 3, Accumulator: -5, PSW: 0004 [-------------N--],
+    IntLine: [0004])
+    [35] 0C 002 000 OS 2 0 (PID: 0, PC: 242, Accumulator: -5, PSW: 8084 [M-------X----N--],
+    IntLine: [0200])
     [36] Process [0 - programSleep] has requested to terminate
     [36] Process [0 - programSleep] moving from the [EXECUTING] state to the [EXIT] state
-    [36] Process [0 - programSleep] moving from the [EXIT] state to the [EXECUTING] state
+    [36] Process [3 - SystemIdleProcess] moving from the [READY] state to the [EXECUTING]
+    state
     [36] Running Process Information:
-    [PID: 0, Priority: 3, WakeUp: 6, Queue: HIGHPRIOUSER]
+    [PID: 3, Priority: 100, WakeUp: -1, Queue: DAEMONS]
     [36] Ready-to-run process queue:
     HIGHPRIOUSER:
     LOWPRIOUSER:
-    DAEMONS: [3,100]
+    DAEMONS:
     [36] SLEEPING Queue:
     [--- empty queue ---]
-    [36] PID association with program's name:
+    [36] PID association with program’s name:
     PID: 0 -> programSleep
     PID: 3 -> SystemIdleProcess
-    [37] 0D 000 000 IRET 0 0 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004
-         [-------------N--], IntLine: [0200])
-    [38] 0C 009 000 OS 9 0 (PID: 0, PC: 246, Accumulator: -5, PSW: 8084
-         [M-------X----N--], IntLine: [0000])
+    [37] 0D 000 000 IRET 0 0 (PID: 3, PC: 183, Accumulator: 2426, PSW: 0080
+    [--------X-------], IntLine: [0200])
+    [38] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [39] Clock interrupt number [7] has occurred
-    [40] 0D 000 000 IRET 0 0 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004
-         [-------------N--], IntLine: [0200])
-    [41] 0C 009 000 OS 9 0 (PID: 0, PC: 246, Accumulator: -5, PSW: 8084
-         [M-------X----N--], IntLine: [0000])
+    [40] 0D 000 000 IRET 0 0 (PID: 3, PC: 183, Accumulator: 2426, PSW: 0080
+    [--------X-------], IntLine: [0200])
+    [41] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0000])
     [42] Clock interrupt number [8] has occurred
-    [43] 0D 000 000 IRET 0 0 (PID: 0, PC: 2, Accumulator: -5, PSW: 0004
-         [-------------N--], IntLine: [0000])
-    [44] 04 003 000 TRAP 3 0 (PID: 0, PC: 3, Accumulator: -5, PSW: 0004
-         [-------------N--], IntLine: [0004])
-    [45] 0C 002 000 OS 2 0 (PID: 0, PC: 242, Accumulator: -5, PSW: 8084
-         [M-------X----N--], IntLine: [0200])
-    [46] Process [0 - programSleep] has requested to terminate
-    [46] Process [0 - programSleep] moving from the [EXECUTING] state to the [EXIT] state
-    [46] Process [3 - SystemIdleProcess] moving from the [READY] state to the
-         [EXECUTING] state
-    [46] Running Process Information:
-    [PID: 3, Priority: 100, WakeUp: 0, Queue: DAEMONS]
+    [43] 0D 000 000 IRET 0 0 (PID: 3, PC: 183, Accumulator: 2426, PSW: 0080
+    [--------X-------], IntLine: [0000])
+    [44] 04 003 000 TRAP 3 0 (PID: 3, PC: 184, Accumulator: 2426, PSW: 0080
+    [--------X-------], IntLine: [0004])
+    [45] 0C 002 000 OS 2 0 (PID: 3, PC: 242, Accumulator: 2426, PSW: 8080 [M-------X-------],
+    IntLine: [0200])
+    [46] Process [3 - SystemIdleProcess] has requested to terminate
+    [46] Process [3 - SystemIdleProcess] moving from the [EXECUTING] state to the [EXIT]
+    state
+    [46] The system will shut down now... [46] Running Process Information:
+    [--- No running process ---]
     [46] Ready-to-run process queue:
     HIGHPRIOUSER:
     LOWPRIOUSER:
     DAEMONS:
     [46] SLEEPING Queue:
     [--- empty queue ---]
-    [46] PID association with program's name:
+    [46] PID association with program’s name:
     PID: 0 -> programSleep
     PID: 3 -> SystemIdleProcess
-    [47] 0D 000 000 IRET 0 0 (PID: 3, PC: 183, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [48] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
-    [49] Clock interrupt number [9] has occurred
-    [50] 0D 000 000 IRET 0 0 (PID: 3, PC: 183, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0200])
-    [51] 0C 009 000 OS 9 0 (PID: 3, PC: 246, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0000])
-    [52] Clock interrupt number [10] has occurred
-    [53] 0D 000 000 IRET 0 0 (PID: 3, PC: 183, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0000])
-    [54] 04 003 000 TRAP 3 0 (PID: 3, PC: 184, Accumulator: 2426, PSW: 0080
-         [--------X-------], IntLine: [0004])
-    [55] 0C 002 000 OS 2 0 (PID: 3, PC: 242, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0200])
-    [56] Process [3 - SystemIdleProcess] has requested to terminate
-    [56] Process [3 - SystemIdleProcess] moving from the [EXECUTING] state to the
-         [EXIT] state
-    [56] The system will shut down now...
-    [56] Running Process Information:
-    [--- No running process ---]
-    [56] Ready-to-run process queue:
-    HIGHPRIOUSER:
-    LOWPRIOUSER:
-    DAEMONS:
-    [56] SLEEPING Queue:
-    [--- empty queue ---]
-    [56] PID association with program's name:
-    PID: 0 -> programSleep
-    PID: 3 -> SystemIdleProcess
-    [57] 0D 000 000 IRET 0 0 (PID: -1, PC: 241, Accumulator: 2426, PSW: 8080
-         [M-------X-------], IntLine: [0200])
-    [58] 0B 000 000 HALT 0 0 (PID: -1, PC: 241, Accumulator: 2426, PSW: 8081
-         [M-------X------S], IntLine: [0200])
-    [58] END of the simulation
+    [47] 0D 000 000 IRET 0 0 (PID: -1, PC: 241, Accumulator: 2426, PSW: 8080
+    [M-------X-------], IntLine: [0200])
+    [48] 0B 000 000 HALT 0 0 (PID: -1, PC: 241, Accumulator: 2426, PSW: 8081
+    [M-------X------S], IntLine: [0200])
+    [48] END of the simulation
+
     $
 
-Ahora si sigue el comportamiento esperado.
+Ahora sí sigue el comportamiento esperado.
