@@ -1,0 +1,5 @@
+55
+5
+ADD 0 -3
+WRITE 15
+TRAP 3 // Probar con HALT y con TRAP 3

@@ -294,8 +294,6 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 	processTable[PID].copyOfBRegister = 0;
 	processTable[PID].copyOfCRegister = 0;
 
-	// Ex 5: modification
-	processTable[PID].whenToWakeUp = 0;
 	
 
 	// Daemons run in protected mode and MMU use real address
@@ -571,14 +569,17 @@ int OperatingSystem_CheckProcessesToWakeUp() {
 
 // Ex 6: modification
 int OperatingSystem_CheckForHigherPriority() {
-	for(int queue = 0; queue < NUMBEROFQUEUES; queue++) {
+	int maxQueue = processTable[executingProcessID].queueID;
+	for(int queue = 0; queue <= maxQueue; queue++) {
 		int firstPID = Heap_getFirst(readyToRunQueue[queue], numberOfReadyToRunProcesses[queue]);
-		if(firstPID != -1 && processTable[firstPID].priority < processTable[executingProcessID].priority) {
+		if(firstPID != -1 && (queue < maxQueue ||
+				processTable[firstPID].priority < processTable[executingProcessID].priority)) {
 			// A more important process was found
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 58, SHORTTERMSCHEDULE, executingProcessID,
 				programList[processTable[executingProcessID].programListIndex]->executableName,
-				processTable[firstPID].priority,
+				firstPID,
 				programList[processTable[firstPID].programListIndex]->executableName);
+			OperatingSystem_ExtractFromReadyToRunQueue(queue);
 			OperatingSystem_PreemptRunningProcess();
 			OperatingSystem_Dispatch(firstPID);
 			return 1;
@@ -603,6 +604,9 @@ void OperatingSystem_HandleClockInterrupt() {
 
 // Ex 5: modification
 int OperatingSystem_MoveToTheBLOCKEDState(int PID) {
+	// When to wake up
+	processTable[executingProcessID].whenToWakeUp = 1 + numberOfClockInterrupts +
+				((Processor_GetRegisterD() > 0) ? Processor_GetRegisterD() : abs(Processor_GetAccumulator()));
 	if (Heap_add(PID, sleepingProcessesQueue,QUEUE_WAKEUP ,&(numberOfSleepingProcesses))>=0) {
 		// Saving context
 		OperatingSystem_SaveContext(executingProcessID);
@@ -611,10 +615,7 @@ int OperatingSystem_MoveToTheBLOCKEDState(int PID) {
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, PID, programList[processTable[PID].programListIndex]->executableName,
 			statesNames[processTable[PID].state], statesNames[BLOCKED]);			
 		//  Change of state
-		processTable[PID].state=BLOCKED;
-		// When to wake up
-		processTable[executingProcessID].whenToWakeUp = 1 + numberOfClockInterrupts +
-					((Processor_GetRegisterD() > 0) ? Processor_GetRegisterD() : abs(Processor_GetAccumulator()));
+		processTable[PID].state=BLOCKED;		
 		return 0;
 	}
 	return -1;
