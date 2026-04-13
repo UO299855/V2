@@ -1,0 +1,7 @@
+// prog-V1-E9
+2
+2
+ADD 19 0
+WRITE 20
+INC 1
+TRAP 3
