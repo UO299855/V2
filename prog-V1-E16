@@ -1,0 +1,6 @@
+20 //prog1
+2
+ADD 1 0
+OS 2 //Privileged
+WRITE 20
+TRAP 3

@@ -1,0 +1,6 @@
+20
+2
+ADD 1 0
+TRAP 4
+WRITE 14
+TRAP 3
