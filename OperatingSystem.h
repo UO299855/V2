@@ -46,6 +46,9 @@ typedef struct {
 	int copyOfARegister;
 	int copyOfBRegister;
 	int copyOfCRegister;
+
+	int timesThrownOut;
+	int timesYielded;
 	
 	// Ex 5: modifications
 	int whenToWakeUp;

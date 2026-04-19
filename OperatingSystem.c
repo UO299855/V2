@@ -139,6 +139,9 @@ void OperatingSystem_Initialize(int programsFromFileIndex) {
 		
 		// Ex 5: modification
 		processTable[i].whenToWakeUp = -1;
+
+		processTable[i].timesThrownOut = 0;
+		processTable[i].timesYielded = 0;		
 	}
 	// Initialization of the interrupt vector table of the processor
 	Processor_InitializeInterruptVectorTable(OS_address_base+2);
@@ -440,6 +443,14 @@ void OperatingSystem_TerminateExecutingProcess() {
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 53, SYSPROC, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName,
 		statesNames[processTable[executingProcessID].state], statesNames[EXIT]);
 	processTable[executingProcessID].state=EXIT;
+
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 112, EXAM, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName,
+		processTable[executingProcessID].timesThrownOut);
+	ComputerSystem_DebugMessage(TIMED_MESSAGE, 113, EXAM, executingProcessID, programList[processTable[executingProcessID].programListIndex]->executableName,
+		processTable[executingProcessID].timesYielded);
+	
+	
+		processTable[executingProcessID].state=EXIT;
 	
 	if (executingProcessID==sipID) {
 		// finishing sipID, change PC to address of OS HALT instruction
@@ -531,6 +542,7 @@ void OperatingSystem_HandleYield() {
 	int otherProcessID = Heap_getFirst(readyToRunQueue[currentQueue], numberOfReadyToRunProcesses[currentQueue]);
 	if(otherProcessID != -1 && processTable[executingProcessID].priority == processTable[otherProcessID].priority) {
 		// yielding is possible
+		processTable[executingProcessID].timesYielded++;
 		ComputerSystem_DebugMessage(TIMED_MESSAGE, 55,SHORTTERMSCHEDULE, executingProcessID,
 			programList[processTable[executingProcessID].programListIndex]->executableName,
 			otherProcessID, programList[processTable[otherProcessID].programListIndex]->executableName);
@@ -575,6 +587,7 @@ int OperatingSystem_CheckForHigherPriority() {
 		if(firstPID != -1 && (queue < maxQueue ||
 				processTable[firstPID].priority < processTable[executingProcessID].priority)) {
 			// A more important process was found
+			processTable[executingProcessID].timesThrownOut++;
 			ComputerSystem_DebugMessage(TIMED_MESSAGE, 58, SHORTTERMSCHEDULE, executingProcessID,
 				programList[processTable[executingProcessID].programListIndex]->executableName,
 				firstPID,

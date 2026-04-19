@@ -1,0 +1,8 @@
+30
+22
+ADD -5 -5
+TRAP 4
+INC 1
+ZJUMP 2
+JUMP -3
+TRAP 3

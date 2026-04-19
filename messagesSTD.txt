@@ -9,3 +9,5 @@
 108,\t\t%s: 
 109,%s
 110,\n
+112,@@MProcess [%d - %s] was thrown out of the processor [%d] times@@\n
+113,@@MProcess [%d - %s] transferred the control of the processor [%d] times@@\n
