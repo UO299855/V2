@@ -1,1 +1,0 @@
-python3 ansi2latex.py < log.txt | python3 insertNewLine.py> log.tex

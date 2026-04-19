@@ -1,1 +1,0 @@
-script -q -c "./Simulator prog" > exercisesTesting/log.txt 2>&1

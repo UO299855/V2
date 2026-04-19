@@ -41,6 +41,7 @@ void OperatingSystem_HandleSleep();
 // Ex 1: modification
 int numberOfClockInterrupts = 0;
 
+int clockInterruptsSinceSIP = 0;
 
 // The process table
 PCB * processTable;
@@ -303,7 +304,7 @@ void OperatingSystem_PCBInitialization(int PID, int initialPhysicalAddress, int 
 		processTable[PID].copyOfPSWRegister= ((unsigned int) 1) << EXECUTION_MODE_BIT;
 	} 
 	else {
-		processTable[PID].queueID= processSize < 30? HIGHPRIOUSERPROCQUEUE : LOWPRIOUSERPROCQUEUE;
+		processTable[PID].queueID= processSize < 600? HIGHPRIOUSERPROCQUEUE : LOWPRIOUSERPROCQUEUE;
 		processTable[PID].copyOfPCRegister=0;
 		processTable[PID].copyOfPSWRegister=0;
 	}
@@ -358,6 +359,8 @@ int OperatingSystem_ExtractFromReadyToRunQueue(int queueID) {
 
 // Function that assigns the processor to a process
 void OperatingSystem_Dispatch(int PID) {
+	clockInterruptsSinceSIP = 0;
+
 	// The process identified by PID becomes the current executing process
 	executingProcessID=PID;
 
@@ -588,9 +591,22 @@ int OperatingSystem_CheckForHigherPriority() {
 	return 0;
 }
 
+void OperatingSystem_OptimizeCPU() {
+	int firstSleepPID = Heap_getFirst(sleepingProcessesQueue, numberOfSleepingProcesses);
+	// CPU usage can be optimized.
+	if(firstSleepPID != -1 && programList[processTable[firstSleepPID].programListIndex]->type == USERPROGRAM) {
+		Heap_poll(sleepingProcessesQueue, QUEUE_WAKEUP, &numberOfSleepingProcesses);
+		OperatingSystem_MoveToTheREADYState(firstSleepPID);
+		ComputerSystem_DebugMessage(TIMED_MESSAGE, 112, EXAM, firstSleepPID,
+			programList[processTable[firstSleepPID].programListIndex]->executableName);
+		OperatingSystem_CheckForHigherPriority();
+	}
+}
+
 //Ex 1: modification
 void OperatingSystem_HandleClockInterrupt() {
 	numberOfClockInterrupts++;
+	if(executingProcessID == sipID) clockInterruptsSinceSIP++;
 	ComputerSystem_DebugMessage(TIMED_MESSAGE, 57, INTERRUPT,numberOfClockInterrupts);
 	// Ex 6: modification
 	if(OperatingSystem_CheckProcessesToWakeUp()) {
@@ -598,6 +614,8 @@ void OperatingSystem_HandleClockInterrupt() {
 		if(OperatingSystem_CheckForHigherPriority()) {
 			OperatingSystem_PrintStatus();
 		}
+	} else if(clockInterruptsSinceSIP >= 2) {
+		OperatingSystem_OptimizeCPU();
 	}
 	return; 
 }
